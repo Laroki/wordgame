@@ -5,10 +5,10 @@ import { v4 as uuidv4 } from 'uuid';
 export class GameService {
     private games: Map<string, Game> = new Map();
 
-    createGame(playerName: string): Game {
+    createGame(playerName: string, isPrivate: boolean = false): Game {
         const uid = uuidv4()
-        const game: Game = { id: uid, players: [], finished: false, round: 0, wordsFilled: false };
-        const player: Player = { name: playerName, currentWord: '', history: [] }
+        const game: Game = { id: uid, players: [], finished: false, round: 0, wordsFilled: false, isPrivate: isPrivate, isFull: false };
+        const player: Player = { name: playerName, currentWord: '', history: [] };
         game.players.push(player)
         this.games.set(uid, game);
         return game;
@@ -16,12 +16,18 @@ export class GameService {
 
     joinGame(gameId: string, playerName: string): Game | null {
         const game = this.games.get(gameId);
-        if (game && game.players.length < 2) {
-            const player: Player = { name: playerName, currentWord: '', history: [] }
-            game.players.push(player)
+        if (game) {
+            if (game.players.length < 2) {
+                const player: Player = { name: playerName, currentWord: '', history: [] }
+                game.players.push(player)
+
+                if (game.players.length === 2) {
+                    game.isFull = true
+                }
+            }
             return game
         }
-        return null
+        return null;
     }
 
     addWord(gameId: string, word: string, playerName: string): Game | null {
@@ -51,5 +57,9 @@ export class GameService {
 
     getGame(gameId: string): Game | undefined {
         return this.games.get(gameId);
+    }
+
+    getPublicGames(): Game[] {
+        return [...this.games.values()].filter(game => !game.isPrivate && !game.finished && !game.isFull)
     }
 }

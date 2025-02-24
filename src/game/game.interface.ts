@@ -4,6 +4,8 @@ interface Game {
     finished: boolean;
     round: number;
     wordsFilled: boolean;
+    isPrivate: boolean;
+    isFull: boolean;
 }
 
 interface Player {
